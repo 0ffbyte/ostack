@@ -1,36 +1,91 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🧱 OStack – In-House SaaS Starter Kit
 
-## Getting Started
+**OStack** is Artntek’s internal foundation for building SaaS products — a modern, type-safe, production-ready stack optimized for fast iteration, scalability, and clean architecture.
 
-First, run the development server:
+---
+
+### 🧩 Tech Stack
+
+- **Framework:** Next.js 16
+- **State Management:** Zustand
+- **Database & ORM:** Postgres + Drizzle ORM
+- **Authentication:** Better Auth
+- **Styling:** Tailwind CSS
+- **Object Storage:** Cloudflare R2
+- **Queue & Scheduling:** Upstash QStash (Messages + Cron Schedules)
+- **Payments:** Stripe (Subscriptions + Usage-based Billing)
+- **Client Data Fetching:** SWR
+
+---
+
+### ⚙️ Core Features
+
+- 🔐 User authentication & session management
+- 📦 File uploads & Cloudflare R2 integration
+- 📬 Serverless-ready background jobs & scheduled tasks via QStash
+- 💳 Subscription management with Stripe
+- 📊 Built-in usage tracking & reporting for metered billing
+- 🗄️ Pre-configured database schema with migrations
+- 🧠 Type-safe full-stack setup using modern TypeScript patterns
+- ⚡ Efficient client-side caching & revalidation with SWR
+
+---
+
+### ⚙️ Environment Variables
+
+Create a `.env.local` file at the project root and configure the following variables:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Environment
+NODE_ENV="development"
+
+# Database
+DATABASE_URL=
+
+# Authentication
+BETTER_AUTH_SECRET=
+BETTER_AUTH_URL=
+
+# OAuth Providers
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=
+
+# Stripe
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+
+STRIPE_PRICE_ID_MINI=
+STRIPE_PRICE_ID_MINI_ANNUAL=
+STRIPE_PRICE_ID_MINI_OVERAGE=
+
+# Cloudflare R2 Storage
+R2_ENDPOINT=
+R2_ACCESS_KEY=
+R2_SECRET_KEY=
+
+# Upstash QStash
+QSTASH_TOKEN=
+QSTASH_CURRENT_SIGNING_KEY=
+QSTASH_NEXT_SIGNING_KEY=
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+💡 _Tip:_ Never commit your `.env.local` file to version control. Use `.env.example` for documentation instead.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 🚀 Getting Started
 
-## Learn More
+Initialize a new project with **Bun**:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+bun init
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Then follow your setup steps (install dependencies, configure environment variables, run database migrations, etc.).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+### 🧠 Philosophy
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+OStack is designed to eliminate boilerplate and unify conventions across Artntek’s ecosystem — making it effortless to launch, maintain, and evolve SaaS products with a consistent developer experience.

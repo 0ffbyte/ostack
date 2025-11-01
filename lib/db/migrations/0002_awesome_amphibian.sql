@@ -1,0 +1,1 @@
+ALTER TABLE "user" ALTER COLUMN "stripe_customer_id" SET NOT NULL;
