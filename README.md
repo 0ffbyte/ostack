@@ -1,4 +1,4 @@
-# 🧱 OStack – In-House SaaS Starter Kit
+# 🧱 OStack – All-in-One SaaS Starter Kit
 
 **OStack** is Artntek’s internal foundation for building SaaS products — a modern, type-safe, production-ready stack optimized for fast iteration, scalability, and clean architecture.
 

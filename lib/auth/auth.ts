@@ -28,8 +28,20 @@ export const auth = betterAuth({
       create: {
         async after(user, context) {
           console.log("User created:", user);
-          await createStripeCustomer(user);
+          await createStripeCustomer({
+            id: user.id,
+            email: user.email,
+            name: user.name,
+          });
         },
+      },
+    },
+  },
+  user: {
+    additionalFields: {
+      stripeCustomerId: {
+        type: "string",
+        required: false,
       },
     },
   },

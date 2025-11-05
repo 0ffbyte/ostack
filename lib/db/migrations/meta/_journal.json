@@ -5,22 +5,15 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1761948142837,
-      "tag": "0000_minor_venus",
+      "when": 1762349076429,
+      "tag": "0000_little_fenris",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1762032386253,
-      "tag": "0001_military_earthquake",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1762032605638,
-      "tag": "0002_awesome_amphibian",
+      "when": 1762366351203,
+      "tag": "0001_chubby_santa_claus",
       "breakpoints": true
     }
   ]

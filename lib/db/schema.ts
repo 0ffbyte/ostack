@@ -16,7 +16,7 @@ export const user = pgTable("user", {
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").default(false).notNull(),
-  stripeCustomerId: text("stripe_customer_id").notNull(),
+  stripeCustomerId: text("stripe_customer_id").unique(),
   image: text("image"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
@@ -80,31 +80,21 @@ export const subscription = pgTable("subscription", {
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   stripeSubscriptionId: text("stripe_subscription_id").unique().notNull(),
-  planName: text("plan_name").notNull(),
-  status: text("subscription_status").notNull(), // The status of the subscription (active, canceled, etc.)
-  cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false).notNull(), // Whether the subscription will be canceled at the end of the period
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
 
-// usage balance aggregate for display & analytics
-export const balance = pgTable("balance", {
-  id: text("id")
-    .primaryKey()
-    .default(sql`gen_random_uuid()`),
-  userId: text("user_id")
+  currentPlanId: text("current_plan_id").notNull(),
+  includedQuota: integer("included_quota").notNull(),
+
+  billingPeriodStart: timestamp("billing_period_start").notNull(),
+  billingPeriodEnd: timestamp("billing_period_end").notNull(),
+  cancelAtPeriodEnd: boolean("cancel_at_period_end").notNull().default(false),
+  downgradeAtPeriodEnd: boolean("downgrade_at_period_end")
     .notNull()
-    .references(() => user.id, { onDelete: "cascade" })
-    .unique(),
-  currentPeriodAmount: integer("current_period_amount")
-    .notNull()
-    .$default(() => 0),
-  lifetimeAmount: integer("lifetime_amount")
-    .notNull()
-    .$default(() => 0),
-  maxSpendAmount: integer("max_spend_amount")
-    .notNull()
-    .$default(() => 300),
+    .default(false),
+
+  overageEnabled: boolean("overage_enabled").notNull().default(true),
+  overageLimit: integer("overage_limit").notNull().default(300),
+
+  status: text("subscription_status").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -126,6 +116,7 @@ export const transaction = pgTable(
   },
   (table) => ({
     userIdIdx: index("idx_transaction_user_id").on(table.userId),
+    timestampIdx: index("idx_transaction_timestamp").on(table.timestamp),
   })
 );
 

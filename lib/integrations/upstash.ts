@@ -10,28 +10,32 @@ export const receiver = new Receiver({
   nextSigningKey: process.env.QSTASH_NEXT_SIGNING_KEY!,
 });
 
-export const verifySignature = async (request: Request, url: string) => {
+export const verifySignature = async (request: Request) => {
   const signature = request.headers.get("Upstash-Signature")!;
   const body = await request.json();
   const isValid = await receiver.verify({
     body: JSON.stringify(body),
     signature,
-    url,
+    url: request.url,
   });
 
   if (!isValid) throw new Error("Invalid signature");
   return body;
 };
 
-/** Cron triggers */
+/** Cron Jobs */
+// Report usage events to Stripe
 await client.schedules.create({
   destination: `${process.env.BETTER_AUTH_URL}/api/stripe/batch-usage-events`,
   scheduleId: "my-test-schedule",
-  cron: "0 0 * * *", // every day at midnight UTC
+  cron: "*/2 * * * *", // every two minutes
   body: JSON.stringify({
     message: "Hello cron job!",
   }),
   method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
-console.log("Cron trigger created");
+console.log("Cron triggers set up successfully");

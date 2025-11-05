@@ -1,1 +1,0 @@
-CREATE INDEX "idx_transaction_user_id" ON "transaction" USING btree ("user_id");

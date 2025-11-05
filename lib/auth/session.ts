@@ -6,6 +6,7 @@ export const verifySession = async () => {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-  if (!session || !session.user) throw new Error("Unauthorized");
+  if (!session || !session.user || !session.user.id)
+    throw new Error("Unauthorized");
   return session;
 };

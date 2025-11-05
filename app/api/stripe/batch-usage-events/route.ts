@@ -8,8 +8,7 @@ import { client } from "@/lib/integrations/upstash";
 export async function POST(request: Request) {
   try {
     // Verify signature
-    const url = `${process.env.BETTER_AUTH_URL}/api/stripe/batch-usage-events`; // destination url
-    const body = await verifySignature(request, url);
+    const body = await verifySignature(request);
     console.log("Batch usage events", body);
 
     // Query distinct user IDs who have at least one unreported usage event

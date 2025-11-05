@@ -2,42 +2,36 @@
 import Stripe from "stripe";
 import { redirect } from "next/navigation";
 import {
-  getUser,
   updateUser,
   updateSubscription,
   createUserSubscription,
   deleteSubscription,
   getUserSubscription,
-  createBalance,
 } from "@/lib/db/queries";
 import { Plans } from "../constants";
-import type { User } from "../auth/auth";
+import { verifySession } from "../auth/session";
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-09-30.clover",
 });
 
-export async function createCheckoutSession({
-  planName,
-}: {
-  planName: string;
-}) {
-  const user = await getUser();
-  if (!user || !user.stripeCustomerId)
+export async function createCheckoutSession({ planId }: { planId: string }) {
+  const { user } = await verifySession();
+  if (!user.stripeCustomerId)
     throw new Error("No Stripe customer found for user.");
 
   // redirect to billing portal if user is already subscribed
-  const subscription = await getUserSubscription();
+  const subscription = await getUserSubscription(user.id);
   if (subscription?.status === "active")
     redirect(`${process.env.BETTER_AUTH_URL}/dashboard`); // dashboard for now
 
   // retrieve plan information
-  const priceId = Plans.find((plan) => plan.name === planName)?.priceId;
-  if (!priceId) throw new Error("No price found for this plan.");
+  const plan = Plans.find((plan) => plan.id === planId);
+  if (!plan?.priceId) throw new Error("No price found for this plan.");
 
   // create checkout session
   const session = await stripe.checkout.sessions.create({
-    line_items: [{ price: priceId, quantity: 1 }],
+    line_items: [{ price: plan.priceId, quantity: 1 }],
     ui_mode: "hosted", // change to embedded to enable modal checkout
     mode: "subscription",
     success_url: `${process.env.BETTER_AUTH_URL}/dashboard`,
@@ -47,92 +41,45 @@ export async function createCheckoutSession({
     allow_promotion_codes: false,
     metadata: {
       userId: user.id,
-      email: user.email,
-      planName,
+      planId: plan.id,
+      includedQuota: plan.limits.generations,
+      overagePriceId: plan.overagePriceId,
     },
   });
   redirect(session.url!);
 }
 
-export async function createStripeCustomer(user: User) {
+export async function createStripeCustomer({
+  id,
+  email,
+  name,
+}: {
+  id: string;
+  email: string;
+  name: string;
+}) {
   const stripeCustomer = await stripe.customers.create({
-    email: user.email,
-    name: user.name,
+    email,
+    name,
   });
 
-  await updateUser(user.id, { stripeCustomerId: stripeCustomer.id });
+  await updateUser(id, { stripeCustomerId: stripeCustomer.id });
   console.log("Created Stripe customer:", stripeCustomer.id);
 }
 
-/*
-export async function createCustomerPortalSession(team: Team) {
-  if (!team.stripeCustomerId || !team.stripeProductId) {
-    redirect("/pricing");
-  }
+export async function createCustomerPortalSession() {
+  const { user } = await verifySession();
+  if (!user.stripeCustomerId)
+    throw new Error("No Stripe customer found for user.");
 
-  let configuration: Stripe.BillingPortal.Configuration;
-  const configurations = await stripe.billingPortal.configurations.list();
-
-  if (configurations.data.length > 0) {
-    configuration = configurations.data[0];
-  } else {
-    const product = await stripe.products.retrieve(team.stripeProductId);
-    if (!product.active) {
-      throw new Error("Team's product is not active in Stripe");
-    }
-
-    const prices = await stripe.prices.list({
-      product: product.id,
-      active: true,
-    });
-    if (prices.data.length === 0) {
-      throw new Error("No active prices found for the team's product");
-    }
-
-    configuration = await stripe.billingPortal.configurations.create({
-      business_profile: {
-        headline: "Manage your subscription",
-      },
-      features: {
-        subscription_update: {
-          enabled: true,
-          default_allowed_updates: ["price", "quantity", "promotion_code"],
-          proration_behavior: "create_prorations",
-          products: [
-            {
-              product: product.id,
-              prices: prices.data.map((price) => price.id),
-            },
-          ],
-        },
-        subscription_cancel: {
-          enabled: true,
-          mode: "at_period_end",
-          cancellation_reason: {
-            enabled: true,
-            options: [
-              "too_expensive",
-              "missing_features",
-              "switched_service",
-              "unused",
-              "other",
-            ],
-          },
-        },
-        payment_method_update: {
-          enabled: true,
-        },
-      },
-    });
-  }
-
-  return stripe.billingPortal.sessions.create({
-    customer: team.stripeCustomerId,
-    return_url: `${process.env.BASE_URL}/dashboard`,
-    configuration: configuration.id,
+  const session = await stripe.billingPortal.sessions.create({
+    customer: user.stripeCustomerId,
+    return_url: `${process.env.BETTER_AUTH_URL}/dashboard`,
+    configuration: "bpc_1SPkkt5nzQqSqsEE20YdxU7D",
   });
+
+  redirect(session.url!);
 }
-*/
 
 export async function handleSubscriptionChange(
   subscription: Stripe.Subscription
@@ -142,13 +89,22 @@ export async function handleSubscriptionChange(
   const status = subscription.status;
   const cancelAtPeriodEnd = subscription.cancel_at_period_end;
 
+  const billingPeriodStart = subscription.items.data[0]?.current_period_start;
+  const billingPeriodEnd = subscription.items.data[0]?.current_period_end;
+
+  // metadata
+  const planId = subscription.metadata?.planId;
+  const includedQuota = subscription.metadata?.includedQuota;
+
   // update relevant fields
   if (status === "active" || status === "trialing") {
-    const plan = subscription.items.data[0]?.plan;
     await updateSubscription(subscriptionId, {
-      planName: (plan?.product as Stripe.Product).name,
-      status,
+      currentPlanId: planId,
+      includedQuota: Number(includedQuota),
+      billingPeriodStart: new Date(billingPeriodStart * 1000),
+      billingPeriodEnd: new Date(billingPeriodEnd * 1000),
       cancelAtPeriodEnd,
+      status,
     });
   }
   // handle deletes on subscription status changes
@@ -161,11 +117,14 @@ export async function handleSubscriptionChange(
 export async function handleCheckoutSessionCompleted(
   session: Stripe.Checkout.Session
 ) {
-  const userId = session.metadata?.userId as string;
-  const planName = session.metadata?.planName as string;
   const customerId = session.customer as string;
   const subscriptionId = session.subscription as string;
-  console.log("session metadata", session.metadata);
+
+  // metadata
+  const userId = session.metadata?.userId as string;
+  const planId = session.metadata?.planId as string;
+  const includedQuota = session.metadata?.includedQuota as string;
+  const overagePriceId = session.metadata?.overagePriceId;
 
   if (!userId) throw new Error("No user id found in session metadata");
 
@@ -186,30 +145,28 @@ export async function handleCheckoutSessionCompleted(
   const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
     expand: ["items.data.price.product"],
   });
-
-  const plan = subscription.items.data[0]?.price;
+  const billingPeriodStart = subscription.items.data[0]?.current_period_start;
+  const billingPeriodEnd = subscription.items.data[0]?.current_period_end;
   const status = subscription.status;
-  if (!plan) throw new Error("No plan found for this subscription.");
 
   await createUserSubscription({
-    stripeSubscriptionId: subscriptionId,
     userId: userId,
-    planName: planName,
+    stripeSubscriptionId: subscriptionId,
+    currentPlanId: planId,
+    includedQuota: Number(includedQuota),
+    billingPeriodStart: new Date(billingPeriodStart * 1000),
+    billingPeriodEnd: new Date(billingPeriodEnd * 1000),
     status,
   });
 
-  // create a balance record for the user
-  await createBalance(userId);
-  console.log("Created balance record for user:", userId);
-
-  // add overage price to subscription
-  const overagePriceId = Plans.find(
-    (plan) => plan.name === planName
-  )?.overagePriceId;
-  if (!overagePriceId) throw new Error("No overage price found for this plan.");
-
+  // this triggers a webhook
   await stripe.subscriptions.update(subscriptionId, {
     items: [{ price: overagePriceId }],
+    metadata: {
+      userId,
+      planId,
+      includedQuota,
+    },
   });
   console.log("Added overage price to subscription:", subscriptionId);
 }

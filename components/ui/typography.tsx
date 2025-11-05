@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-export function Heading({
+export function H1({
   children,
   className,
 }: {
@@ -19,7 +19,26 @@ export function Heading({
   );
 }
 
-export function Paragraph({
+export function H2({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <p
+      className={cn(
+        "text-[20px] leading-[32px] font-semibold font-sans",
+        className
+      )}
+    >
+      {children}
+    </p>
+  );
+}
+
+export function P({
   children,
   className,
 }: {

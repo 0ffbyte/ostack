@@ -7,8 +7,7 @@ import { stripe } from "@/lib/payments/stripe";
 
 export async function POST(request: Request) {
   // 1. Verify signature
-  const url = `${process.env.BETTER_AUTH_URL}/api/stripe/report-usage`; // destination url
-  const body = await verifySignature(request, url);
+  const body = await verifySignature(request);
   const { batch } = body as { batch: string[] };
   if (batch.length === 0)
     return NextResponse.json(
@@ -38,9 +37,9 @@ export async function POST(request: Request) {
         event_name: "energy",
         payload: {
           value: usage.totalAmount.toString(),
-          stripe_customer_id: usage.stripeCustomerId,
+          stripe_customer_id: usage.stripeCustomerId!,
         },
-        identifier: `usage_${usage.userId}_${Date.now()}`,
+        identifier: `usage_${usage.stripeCustomerId}_${Date.now()}`,
       });
 
       await db
