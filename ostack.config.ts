@@ -39,6 +39,7 @@ const config: OstackConfig = {
     },
   ],
   meterEventName: "energy",
+  r2Bucket: "omni",
 };
 
 export default config;

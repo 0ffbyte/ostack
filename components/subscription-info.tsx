@@ -12,9 +12,10 @@ export default async function SubscriptionInfo() {
       <H2>Subscription Info</H2>
       <P>Plan: {subscription?.currentPlanId}</P>
       <P>Included Quota: {subscription?.includedQuota}</P>
-      <P>Cancel at Period End: {subscription?.cancelAtPeriodEnd.toString()}</P>
+      <P>Cancel at Period End: {subscription?.cancelAtPeriodEnd?.toString()}</P>
       <P>
-        Downgrade at Period End: {subscription?.downgradeAtPeriodEnd.toString()}
+        Downgrade at Period End:{" "}
+        {subscription?.downgradeAtPeriodEnd?.toString()}
       </P>
       <P>Total Usage: {usage?.totalUsage}</P>
     </div>

@@ -13,4 +13,5 @@ export type OstackConfig = {
     };
   }[];
   meterEventName: string;
+  r2Bucket: string;
 };

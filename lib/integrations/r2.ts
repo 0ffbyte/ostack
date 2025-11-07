@@ -1,4 +1,5 @@
 "server-only";
+import config from "@/ostack.config";
 import {
   S3Client,
   PutObjectCommand,
@@ -15,8 +16,6 @@ const s3Client = new S3Client({
   },
 });
 
-const BUCKET = "omni";
-
 export async function putObject(
   buffer: Buffer | Uint8Array,
   key: string,
@@ -25,7 +24,7 @@ export async function putObject(
 ): Promise<PutObjectCommandOutput> {
   return await s3Client.send(
     new PutObjectCommand({
-      Bucket: BUCKET,
+      Bucket: config.r2Bucket,
       Key: key,
       Body: buffer,
       ContentType: contentType,
@@ -39,7 +38,7 @@ export async function putObject(
 export async function deleteObject(key: string) {
   return await s3Client.send(
     new DeleteObjectCommand({
-      Bucket: BUCKET,
+      Bucket: config.r2Bucket,
       Key: key,
     })
   );

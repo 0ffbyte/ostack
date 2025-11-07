@@ -102,7 +102,6 @@ export const subscription = pgTable("subscription", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-// usage transaction log used for billing and usage reporting
 export const transaction = pgTable(
   "transaction",
   {
