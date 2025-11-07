@@ -3,7 +3,6 @@ import { OstackConfig } from "./types";
 const config: OstackConfig = {
   name: "OStack",
   description: "The Ominstack",
-  logo: "https://i.imgur.com/0k5y4w6.png",
   plans: [
     {
       id: "mini",

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist_Mono, Inter } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
+import config from "@/ostack.config";
 
 const sohneBreitSemibold = localFont({
   src: "../public/fonts/sohne-breit-semibold.otf",
@@ -19,8 +20,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "OStack",
-  description: "The Ominstack",
+  title: config.name,
+  description: config.description,
 };
 
 export default function RootLayout({

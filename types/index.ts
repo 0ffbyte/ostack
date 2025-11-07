@@ -1,7 +1,6 @@
 export type OstackConfig = {
   name: string;
   description: string;
-  logo: string;
   plans: {
     id: string;
     priceId: string;
