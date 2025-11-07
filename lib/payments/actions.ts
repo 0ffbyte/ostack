@@ -1,5 +1,4 @@
 "use server";
-import { sql } from "drizzle-orm";
 import { db } from "../db";
 import { transaction } from "../db/schema";
 import {
@@ -8,9 +7,8 @@ import {
   stripe,
 } from "./stripe";
 import { getUserSubscription } from "../db/queries";
-import { Plans } from "../constants";
+import config from "@/ostack.config";
 import { verifySession } from "../auth/session";
-import Stripe from "stripe";
 
 export const checkoutAction = async (planId: string) => {
   await createCheckoutSession({ planId });
@@ -21,6 +19,7 @@ export const customerPortalAction = async () => {
 };
 
 export const updateSubscription = async (planId: string) => {
+  // 1: retreive user subscription from stripe (more robust)
   const { user } = await verifySession();
   if (!user.stripeCustomerId)
     throw new Error("No Stripe customer found for user.");
@@ -29,15 +28,17 @@ export const updateSubscription = async (planId: string) => {
   if (subscription?.status !== "active")
     throw new Error("No active subscription found.");
 
-  // retreive subscription from stripe
   const stripeSubscription = await stripe.subscriptions.retrieve(
     subscription.stripeSubscriptionId
   );
 
-  const currentPlan = Plans.find(
+  if (!stripeSubscription) throw new Error("No subscription found.");
+
+  // 2: retrieve current plan information and prices
+  const currentPlan = config.plans.find(
     (plan) => plan.id === subscription.currentPlanId
   );
-  const newPlan = Plans.find((plan) => plan.id === planId);
+  const newPlan = config.plans.find((plan) => plan.id === planId);
   if (!newPlan || !currentPlan) throw new Error("No plan found.");
 
   const baseItem = stripeSubscription.items.data.find(
@@ -47,29 +48,19 @@ export const updateSubscription = async (planId: string) => {
     (item) => item.price.id === currentPlan.overagePriceId
   );
 
-  const isDowngrade = currentPlan?.monthlyCost > newPlan.monthlyCost;
-
-  if (isDowngrade) {
-    // retrieve subscription schedules from stripe
-    const schedules = await stripe.subscriptionSchedules.list({
-      customer: user.stripeCustomerId,
-      limit: 1,
-    });
-
-    console.log("found", schedules.data.length, "schedules");
-
-    // create new subscription schedule if none exists
-    let subscriptionSchedule: Stripe.SubscriptionSchedule;
-    if (schedules.data.length === 0) {
-      subscriptionSchedule = await stripe.subscriptionSchedules.create({
+  // 3: schdule a downgrade when conditions apply else upgrade immediately
+  if (currentPlan?.monthlyCost > newPlan.monthlyCost) {
+    let subscriptionScheduleId: string;
+    if (!subscription.stripeSubscriptionScheduleId) {
+      const newSchudule = await stripe.subscriptionSchedules.create({
         from_subscription: subscription.stripeSubscriptionId,
       });
+      subscriptionScheduleId = newSchudule.id;
     } else {
-      subscriptionSchedule = schedules.data[0];
+      subscriptionScheduleId = subscription.stripeSubscriptionScheduleId;
     }
 
-    // schedule downgrade at the end of the current billing period
-    await stripe.subscriptionSchedules.update(subscriptionSchedule.id, {
+    await stripe.subscriptionSchedules.update(subscriptionScheduleId, {
       end_behavior: "release",
       phases: [
         {
@@ -88,6 +79,9 @@ export const updateSubscription = async (planId: string) => {
           end_date: Math.floor(
             new Date(subscription.billingPeriodEnd).getTime() / 1000
           ),
+          metadata: {
+            scheduledDowngrade: "true",
+          },
         },
         {
           items: [
@@ -106,6 +100,7 @@ export const updateSubscription = async (planId: string) => {
             userId: user.id,
             planId: newPlan.id,
             includedQuota: newPlan.limits.generations,
+            scheduledDowngrade: "",
           },
         },
       ],
@@ -113,7 +108,6 @@ export const updateSubscription = async (planId: string) => {
 
     console.log("downgrade scheduled at the end of the current billing period");
   } else {
-    // upgrade immediately
     await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
       items: [
         {
@@ -130,6 +124,8 @@ export const updateSubscription = async (planId: string) => {
         userId: user.id,
         planId: newPlan.id,
         includedQuota: newPlan.limits.generations,
+        scheduledDowngrade: "",
+        scheduledCancel: "",
       },
     });
 
@@ -146,40 +142,35 @@ export const cancelSubscription = async () => {
   if (subscription?.status !== "active")
     throw new Error("No active subscription found.");
 
-  // retrieve subscription schedules from stripe
-  const schedules = await stripe.subscriptionSchedules.list({
-    customer: user.stripeCustomerId,
-    limit: 1,
+  if (subscription.stripeSubscriptionScheduleId) {
+    // release from schedule
+    await stripe.subscriptionSchedules.release(
+      subscription.stripeSubscriptionScheduleId
+    );
+  }
+  // cancel subscription at period end
+  await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+    cancel_at_period_end: true,
   });
+};
 
-  const currentPlan = Plans.find(
-    (plan) => plan.id === subscription.currentPlanId
-  );
+export const restoreSubscription = async () => {
+  const { user } = await verifySession();
+  if (!user.stripeCustomerId)
+    throw new Error("No Stripe customer found for user.");
 
-  console.log("found", schedules.data.length, "schedules");
+  const subscription = await getUserSubscription(user.id);
+  if (subscription?.status !== "active")
+    throw new Error("No active subscription found.");
 
-  if (schedules.data.length > 0) {
-    console.log("canceling subscription");
-    await stripe.subscriptionSchedules.update(schedules.data[0].id, {
-      end_behavior: "cancel",
-      phases: [
-        {
-          items: [
-            { price: currentPlan?.priceId, quantity: 1 },
-            { price: currentPlan?.overagePriceId },
-          ],
-          start_date: Math.floor(
-            new Date(subscription.billingPeriodStart).getTime() / 1000
-          ),
-          end_date: Math.floor(
-            new Date(subscription.billingPeriodEnd).getTime() / 1000
-          ),
-        },
-      ],
-    });
+  if (subscription.stripeSubscriptionScheduleId) {
+    console.log("resuming current subscription");
+    await stripe.subscriptionSchedules.release(
+      subscription.stripeSubscriptionScheduleId
+    );
   } else {
     await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
-      cancel_at_period_end: true,
+      cancel_at_period_end: false,
     });
   }
 };
@@ -195,7 +186,7 @@ export const incrementUsage = async (amount: number) => {
 
   await db.insert(transaction).values({
     userId: subscription.userId,
-    eventName: "energy",
+    eventName: "energy", // your consumed resource identifier
     amount,
   });
 };

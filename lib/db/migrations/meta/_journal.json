@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1762349076429,
-      "tag": "0000_little_fenris",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1762366351203,
-      "tag": "0001_chubby_santa_claus",
+      "when": 1762441892810,
+      "tag": "0000_careful_tarot",
       "breakpoints": true
     }
   ]

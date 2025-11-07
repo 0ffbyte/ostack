@@ -4,9 +4,9 @@ import { eq, inArray, and, sum } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { transaction, user } from "@/lib/db/schema";
 import { stripe } from "@/lib/payments/stripe";
+import config from "@/ostack.config";
 
 export async function POST(request: Request) {
-  // 1. Verify signature
   const body = await verifySignature(request);
   const { batch } = body as { batch: string[] };
   if (batch.length === 0)
@@ -15,7 +15,7 @@ export async function POST(request: Request) {
       { status: 400 }
     );
 
-  // 2. Queries and aggregate all unreported transactions for the user ids in the batch
+  // 1. Queries and aggregate all unreported transactions for the user ids in the batch
   const usageTotals = await db
     .select({
       userId: transaction.userId,
@@ -30,11 +30,11 @@ export async function POST(request: Request) {
     .groupBy(transaction.userId, user.stripeCustomerId);
   console.log("Usage totals", usageTotals);
 
-  // 3. Report usage to Stripe for each user & mark transactions as reported
+  // 2. Report usage to Stripe for each user & mark transactions as reported
   for (const usage of usageTotals) {
     try {
       await stripe.billing.meterEvents.create({
-        event_name: "energy",
+        event_name: config.meterEventName,
         payload: {
           value: usage.totalAmount.toString(),
           stripe_customer_id: usage.stripeCustomerId!,
@@ -61,7 +61,6 @@ export async function POST(request: Request) {
 
 /**
  * What this route handler does:
- * 1. Verifies the signature of the request
- * 2. Queries and aggregates all unreported transactions for the user ids in the batch
- * 3. Report usage to Stripe for each user & mark transactions as reported
+ * 1. Queries and aggregates all unreported transactions for the user ids in the batch
+ * 2. Report usage to Stripe for each user & mark transactions as reported
  */

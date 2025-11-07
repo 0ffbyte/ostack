@@ -8,7 +8,7 @@ import {
   deleteSubscription,
   getUserSubscription,
 } from "@/lib/db/queries";
-import { Plans } from "../constants";
+import config from "@/ostack.config";
 import { verifySession } from "../auth/session";
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -26,7 +26,7 @@ export async function createCheckoutSession({ planId }: { planId: string }) {
     redirect(`${process.env.BETTER_AUTH_URL}/dashboard`); // dashboard for now
 
   // retrieve plan information
-  const plan = Plans.find((plan) => plan.id === planId);
+  const plan = config.plans.find((plan) => plan.id === planId);
   if (!plan?.priceId) throw new Error("No price found for this plan.");
 
   // create checkout session
@@ -88,6 +88,7 @@ export async function handleSubscriptionChange(
   const subscriptionId = subscription.id as string;
   const status = subscription.status;
   const cancelAtPeriodEnd = subscription.cancel_at_period_end;
+  const schedule = subscription.schedule as string;
 
   const billingPeriodStart = subscription.items.data[0]?.current_period_start;
   const billingPeriodEnd = subscription.items.data[0]?.current_period_end;
@@ -95,6 +96,7 @@ export async function handleSubscriptionChange(
   // metadata
   const planId = subscription.metadata?.planId;
   const includedQuota = subscription.metadata?.includedQuota;
+  const scheduledDowngrade = subscription.metadata?.scheduledDowngrade;
 
   // update relevant fields
   if (status === "active" || status === "trialing") {
@@ -103,7 +105,9 @@ export async function handleSubscriptionChange(
       includedQuota: Number(includedQuota),
       billingPeriodStart: new Date(billingPeriodStart * 1000),
       billingPeriodEnd: new Date(billingPeriodEnd * 1000),
-      cancelAtPeriodEnd,
+      cancelAtPeriodEnd: cancelAtPeriodEnd,
+      downgradeAtPeriodEnd: !!schedule ? !!scheduledDowngrade : false, // if it has a schedule, it's scheduled to downgrade
+      stripeSubscriptionScheduleId: schedule,
       status,
     });
   }

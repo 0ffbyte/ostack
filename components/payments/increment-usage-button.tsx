@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 
 export default function IncrementUsageButton() {
   return (
-    <Button className="bg-blue-500" onClick={() => incrementUsage(1)}>
+    <Button className="bg-blue-500" onClick={() => incrementUsage(100)}>
       Increment Usage
     </Button>
   );

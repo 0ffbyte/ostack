@@ -80,6 +80,9 @@ export const subscription = pgTable("subscription", {
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   stripeSubscriptionId: text("stripe_subscription_id").unique().notNull(),
+  stripeSubscriptionScheduleId: text(
+    "stripe_subscription_schedule_id"
+  ).unique(),
 
   currentPlanId: text("current_plan_id").notNull(),
   includedQuota: integer("included_quota").notNull(),

@@ -8,14 +8,14 @@ export function H1({
   className?: string;
 }) {
   return (
-    <p
+    <h1
       className={cn(
-        "text-[32px] leading-[40px] font-bold font-sans",
+        "text-[32px] leading-[38px] font-sans-semibold text-pretty",
         className
       )}
     >
       {children}
-    </p>
+    </h1>
   );
 }
 
@@ -27,14 +27,14 @@ export function H2({
   className?: string;
 }) {
   return (
-    <p
+    <h2
       className={cn(
         "text-[20px] leading-[32px] font-semibold font-sans",
         className
       )}
     >
       {children}
-    </p>
+    </h2>
   );
 }
 
@@ -48,7 +48,7 @@ export function P({
   return (
     <p
       className={cn(
-        "text-[16px] leading-[24px] font-medium font-sans",
+        "text-[16px] leading-[22px] font-sans font-medium text-ellipsis",
         className
       )}
     >

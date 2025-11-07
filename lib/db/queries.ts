@@ -1,19 +1,10 @@
 "server-only";
 import { db } from "@/lib/db";
-import { user, subscription } from "@/lib/db/schema";
-import { eq, InferSelectModel } from "drizzle-orm";
+import { user, subscription, transaction } from "@/lib/db/schema";
+import { eq, gte, lt, sum, InferSelectModel, and } from "drizzle-orm";
 import type { User } from "@/lib/auth/auth";
 
 type Subscription = InferSelectModel<typeof subscription>;
-
-export const getUserByCustomerId = async (customerId: string) => {
-  const data = await db
-    .select()
-    .from(user)
-    .where(eq(user.stripeCustomerId, customerId));
-  if (data.length === 0) return null;
-  return data[0];
-};
 
 export const updateUser = async (userId: string, data: Partial<User>) => {
   await db.update(user).set(data).where(eq(user.id, userId));
@@ -52,4 +43,31 @@ export async function deleteSubscription(stripeSubscriptionId: string) {
   await db
     .delete(subscription)
     .where(eq(subscription.stripeSubscriptionId, stripeSubscriptionId));
+}
+
+export async function getCurrentUsage(userId: string) {
+  const data = await db
+    .select({
+      userId: subscription.userId,
+      totalUsage: sum(transaction.amount).mapWith(Number),
+      periodStart: subscription.billingPeriodStart,
+      periodEnd: subscription.billingPeriodEnd,
+    })
+    .from(transaction)
+    .innerJoin(subscription, eq(transaction.userId, subscription.userId))
+    .where(
+      and(
+        eq(transaction.userId, userId),
+        gte(transaction.timestamp, subscription.billingPeriodStart),
+        lt(transaction.timestamp, subscription.billingPeriodEnd)
+      )
+    )
+    .groupBy(
+      subscription.userId,
+      subscription.billingPeriodStart,
+      subscription.billingPeriodEnd
+    );
+
+  console.log("usage_data:", data);
+  return data[0];
 }

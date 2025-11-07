@@ -1,5 +1,5 @@
 {
-  "id": "2a8a2147-d70c-42a7-99ac-7430eef30437",
+  "id": "50002439-7041-421c-8396-240707484613",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -216,6 +216,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "stripe_subscription_schedule_id": {
+          "name": "stripe_subscription_schedule_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "current_plan_id": {
           "name": "current_plan_id",
           "type": "text",
@@ -242,6 +248,13 @@
         },
         "cancel_at_period_end": {
           "name": "cancel_at_period_end",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "downgrade_at_period_end": {
+          "name": "downgrade_at_period_end",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
@@ -305,6 +318,13 @@
           "nullsNotDistinct": false,
           "columns": [
             "stripe_subscription_id"
+          ]
+        },
+        "subscription_stripe_subscription_schedule_id_unique": {
+          "name": "subscription_stripe_subscription_schedule_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "stripe_subscription_schedule_id"
           ]
         }
       },

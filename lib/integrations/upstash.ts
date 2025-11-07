@@ -37,5 +37,3 @@ await client.schedules.create({
     "Content-Type": "application/json",
   },
 });
-
-console.log("Cron triggers set up successfully");

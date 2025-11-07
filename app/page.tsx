@@ -1,14 +1,23 @@
 "use client";
-import { P, H1 } from "@/components/ui/typography";
+import { H2, H1, P } from "@/components/ui/typography";
 import LoginButton from "@/components/auth/login";
 
 export default function Home() {
   return (
-    <main className="font-sans flex flex-col items-center justify-center min-h-screen space-y-4">
-      <H1>Ostack SaaS</H1>
-      <P>Welcome to ostack-saas, a fully featured SaaS template.</P>
+    <div className="w-full min-h-screen flex items-start justify-center">
+      <main className="max-w-[1024px] w-full flex flex-col justify-start space-y-[48px] pt-[128px]">
+        <header className="">
+          <H1>
+            OStack, <span className="text-zinc-400">Built to Last.</span>
+          </H1>
+          <H2>Welcome to ostack, a fully featured SaaS template.</H2>
+        </header>
 
-      <LoginButton />
-    </main>
+        <div className="space-y-[16px] max-w-[420px] w-full">
+          <P>Sign in to get started.</P>
+          <LoginButton />
+        </div>
+      </main>
+    </div>
   );
 }

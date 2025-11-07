@@ -11,7 +11,6 @@ const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 export async function POST(request: NextRequest) {
   const payload = await request.text();
   const signature = request.headers.get("stripe-signature") as string;
-
   let event: Stripe.Event;
 
   try {
@@ -33,6 +32,7 @@ export async function POST(request: NextRequest) {
     case "customer.subscription.updated":
     case "customer.subscription.deleted":
       const subscription = event.data.object as Stripe.Subscription;
+      console.log(subscription);
       await handleSubscriptionChange(subscription);
       console.log(`Subscription updated: ${subscription.id}`);
       break;

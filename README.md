@@ -89,3 +89,7 @@ Then follow your setup steps (install dependencies, configure environment variab
 ### 🧠 Philosophy
 
 OStack is designed to eliminate boilerplate and unify conventions across Artntek’s ecosystem — making it effortless to launch, maintain, and evolve SaaS products with a consistent developer experience.
+
+### 📚 New Concepts
+
+- **Scheduled Subscriptions:** More on this later.

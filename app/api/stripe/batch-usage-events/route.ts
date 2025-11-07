@@ -6,48 +6,37 @@ import { NextResponse } from "next/server";
 import { client } from "@/lib/integrations/upstash";
 
 export async function POST(request: Request) {
-  try {
-    // Verify signature
-    const body = await verifySignature(request);
-    console.log("Batch usage events", body);
+  await verifySignature(request);
 
-    // Query distinct user IDs who have at least one unreported usage event
-    const users = await db
-      .selectDistinct({ id: user.id })
-      .from(transaction)
-      .innerJoin(user, eq(transaction.userId, user.id))
-      .where(eq(transaction.reported, false));
-    const userIds = users.map((user) => user.id);
+  // Step 1:Query distinct user IDs who have at least one unreported usage event
+  const users = await db
+    .selectDistinct({ id: transaction.userId })
+    .from(transaction)
+    .where(eq(transaction.reported, false));
+  const userIds = users.map((user) => user.id);
 
-    if (users.length === 0) return NextResponse.json({ message: "No batches" });
+  if (users.length === 0) return NextResponse.json({ message: "No batches" });
 
-    // Step 2: Split into batches of 128
-    const batchSize = 128;
-    const userIdBatches: string[][] = [];
-    for (let i = 0; i < userIds.length; i += batchSize) {
-      userIdBatches.push(userIds.slice(i, i + batchSize));
-    }
-    console.log("User ID batches", userIdBatches);
-
-    // Step 3: Iterate over each batch and queue them to qstash
-    for (const [idx, batch] of userIdBatches.entries()) {
-      await client.publishJSON({
-        url: `${process.env.BETTER_AUTH_URL}/api/stripe/report-usage`,
-        body: { batch },
-        method: "POST",
-        delay: idx * 30, // 30s between batches
-      });
-      console.log(`Queued batch ${idx + 1}/${userIdBatches.length}`);
-    }
-
-    return NextResponse.json(
-      { message: "Batch usage events" },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error }, { status: 500 });
+  // Step 2: Split into batches of 128
+  const batchSize = 128;
+  const userIdBatches: string[][] = [];
+  for (let i = 0; i < userIds.length; i += batchSize) {
+    userIdBatches.push(userIds.slice(i, i + batchSize));
   }
+  console.log("User ID batches", userIdBatches);
+
+  // Step 3: Iterate over each batch and queue them to qstash
+  for (const [idx, batch] of userIdBatches.entries()) {
+    await client.publishJSON({
+      url: `${process.env.BETTER_AUTH_URL}/api/stripe/report-usage`,
+      body: { batch },
+      method: "POST",
+      delay: idx * 30, // 30s between batches
+    });
+    console.log(`Queued batch ${idx + 1}/${userIdBatches.length}`);
+  }
+
+  return NextResponse.json({ message: "Batch usage events" }, { status: 200 });
 }
 
 /**

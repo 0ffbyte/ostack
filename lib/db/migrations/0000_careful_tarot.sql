@@ -30,17 +30,20 @@ CREATE TABLE "subscription" (
 	"id" text PRIMARY KEY NOT NULL,
 	"user_id" text NOT NULL,
 	"stripe_subscription_id" text NOT NULL,
+	"stripe_subscription_schedule_id" text,
 	"current_plan_id" text NOT NULL,
 	"included_quota" integer NOT NULL,
 	"billing_period_start" timestamp NOT NULL,
 	"billing_period_end" timestamp NOT NULL,
 	"cancel_at_period_end" boolean DEFAULT false NOT NULL,
+	"downgrade_at_period_end" boolean DEFAULT false NOT NULL,
 	"overage_enabled" boolean DEFAULT true NOT NULL,
 	"overage_limit" integer DEFAULT 300 NOT NULL,
 	"subscription_status" text NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
-	CONSTRAINT "subscription_stripe_subscription_id_unique" UNIQUE("stripe_subscription_id")
+	CONSTRAINT "subscription_stripe_subscription_id_unique" UNIQUE("stripe_subscription_id"),
+	CONSTRAINT "subscription_stripe_subscription_schedule_id_unique" UNIQUE("stripe_subscription_schedule_id")
 );
 --> statement-breakpoint
 CREATE TABLE "transaction" (
