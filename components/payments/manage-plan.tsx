@@ -19,30 +19,24 @@ export default function ManagePlan() {
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline">Manage Account</Button>
+        <Button variant="outline" className="w-fit">
+          Manage Subsciption
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        align="end"
+        align="start"
         side="bottom"
         sideOffset={8}
-        className="bg-[#f2f2f2]/80"
         style={GlassMaterial}
       >
-        <DropdownMenuLabel>Account</DropdownMenuLabel>
-        <DropdownMenuItem>Profile Settings</DropdownMenuItem>
+        <DropdownMenuLabel>Options</DropdownMenuLabel>
         <DropdownMenuItem onClick={() => updateSubscription("plus")}>
-          Update Plan
+          Update
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={cancelSubscription}>
-          Cancel Plan
-        </DropdownMenuItem>
+        <DropdownMenuItem onClick={cancelSubscription}>Cancel</DropdownMenuItem>
         <DropdownMenuItem onClick={restoreSubscription}>
-          Restore Plan
+          Restore
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={customerPortalAction}>
-          Billing Portal
-        </DropdownMenuItem>
-        <DropdownMenuItem variant="destructive">Sign out</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

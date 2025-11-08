@@ -1,12 +1,10 @@
 "use server";
-import { db } from "../db";
-import { transaction } from "../db/schema";
 import {
   createCheckoutSession,
   createCustomerPortalSession,
   stripe,
 } from "./stripe";
-import { getUserSubscription } from "../db/queries";
+import { getSubscription } from "@/lib/payments/queries";
 import config from "@/ostack.config";
 import { verifySession } from "../auth/session";
 
@@ -24,7 +22,7 @@ export const updateSubscription = async (planId: string) => {
   if (!user.stripeCustomerId)
     throw new Error("No Stripe customer found for user.");
 
-  const subscription = await getUserSubscription(user.id);
+  const subscription = await getSubscription(user.id);
   if (subscription?.status !== "active")
     throw new Error("No active subscription found.");
 
@@ -138,7 +136,7 @@ export const cancelSubscription = async () => {
   if (!user.stripeCustomerId)
     throw new Error("No Stripe customer found for user.");
 
-  const subscription = await getUserSubscription(user.id);
+  const subscription = await getSubscription(user.id);
   if (subscription?.status !== "active")
     throw new Error("No active subscription found.");
 
@@ -159,7 +157,7 @@ export const restoreSubscription = async () => {
   if (!user.stripeCustomerId)
     throw new Error("No Stripe customer found for user.");
 
-  const subscription = await getUserSubscription(user.id);
+  const subscription = await getSubscription(user.id);
   if (subscription?.status !== "active")
     throw new Error("No active subscription found.");
 
@@ -173,20 +171,4 @@ export const restoreSubscription = async () => {
       cancel_at_period_end: false,
     });
   }
-};
-
-export const incrementUsage = async (amount: number) => {
-  const { user } = await verifySession();
-
-  const subscription = await getUserSubscription(user.id);
-  if (subscription?.status !== "active")
-    throw new Error("No active subscription found.");
-
-  if (amount < 0) throw new Error("Amount must be greater than 0.");
-
-  await db.insert(transaction).values({
-    userId: subscription.userId,
-    eventName: "energy", // your consumed resource identifier
-    amount,
-  });
 };

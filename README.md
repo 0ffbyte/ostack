@@ -66,8 +66,6 @@ QSTASH_CURRENT_SIGNING_KEY=
 QSTASH_NEXT_SIGNING_KEY=
 ```
 
-💡 _Tip:_ Never commit your `.env.local` file to version control. Use `.env.example` for documentation instead.
-
 ---
 
 ### 🚀 Getting Started
@@ -81,6 +79,20 @@ bun init
 Then follow your setup steps (install dependencies, configure environment variables, run database migrations, etc.).
 
 ---
+
+### 📚 Testing Locally
+
+Forwarding stripe events:
+
+```bash
+stripe listen --forward-to localhost:3000/api/stripe/webhook
+```
+
+Run a local QStash server:
+
+```bash
+npx @upstash/qstash-cli dev
+```
 
 ### 🧠 Philosophy
 

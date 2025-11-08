@@ -24,11 +24,11 @@ export const verifySignature = async (request: Request) => {
 };
 
 /** Cron Jobs */
-// Report usage events to Stripe
+// Report usage events to Stripe every 6 hours
 await client.schedules.create({
   destination: `${process.env.BETTER_AUTH_URL}/api/stripe/batch-usage-events`,
   scheduleId: "my-test-schedule",
-  cron: "*/2 * * * *", // every two minutes
+  cron: "0 */6 * * *",
   body: JSON.stringify({
     message: "Hello cron job!",
   }),

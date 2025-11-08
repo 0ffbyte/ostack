@@ -3,7 +3,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth/auth-client";
 
-export default function LoginButton() {
+export default function SignOutButton() {
   const [isPending, setIsPending] = React.useState(false);
   const handleSignOut = async () => {
     setIsPending(true);
@@ -14,7 +14,7 @@ export default function LoginButton() {
 
   return (
     <Button onClick={handleSignOut} className="w-[84px]">
-      {isPending ? "Signing Out..." : "Sign Out"}
+      {isPending ? "..." : "Sign Out"}
     </Button>
   );
 }

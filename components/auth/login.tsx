@@ -9,13 +9,13 @@ export default function LoginButton() {
     setIsPending(true);
     await authClient.signIn.social({
       provider: "github",
-      //callbackURL: "/dashboard",
+      callbackURL: "/dashboard",
     });
   };
 
   return (
     <Button onClick={handleGithubSignIn} className="w-[84px]">
-      {isPending ? "Signing in..." : "Sign In"}
+      {isPending ? "..." : "Sign In"}
     </Button>
   );
 }

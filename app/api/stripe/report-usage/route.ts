@@ -1,8 +1,8 @@
 import { verifySignature } from "@/lib/integrations/upstash";
 import { NextResponse } from "next/server";
 import { eq, inArray, and, sum } from "drizzle-orm";
-import { db } from "@/lib/db";
-import { transaction, user } from "@/lib/db/schema";
+import { db } from "@/lib/data/db";
+import { transaction, user } from "@/lib/data/db/schema";
 import { stripe } from "@/lib/payments/stripe";
 import config from "@/ostack.config";
 

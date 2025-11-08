@@ -1,8 +1,8 @@
 "server-only";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { db } from "@/lib/db"; // your drizzle instance
-import * as schema from "@/lib/db/schema";
+import { db } from "@/lib/data/db"; // your drizzle instance
+import * as schema from "@/lib/data/db/schema";
 import { createStripeCustomer } from "@/lib/payments/stripe";
 
 export type Session = typeof auth.$Infer.Session;

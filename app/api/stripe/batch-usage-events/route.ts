@@ -1,5 +1,5 @@
-import { db } from "@/lib/db";
-import { transaction, user } from "@/lib/db/schema";
+import { db } from "@/lib/data/db";
+import { transaction, user } from "@/lib/data/db/schema";
 import { verifySignature } from "@/lib/integrations/upstash";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";

@@ -4,10 +4,10 @@ import { redirect } from "next/navigation";
 import {
   updateUser,
   updateSubscription,
-  createUserSubscription,
+  createSubscription,
   deleteSubscription,
-  getUserSubscription,
-} from "@/lib/db/queries";
+  getSubscription,
+} from "@/lib/payments/queries";
 import config from "@/ostack.config";
 import { verifySession } from "../auth/session";
 
@@ -21,7 +21,7 @@ export async function createCheckoutSession({ planId }: { planId: string }) {
     throw new Error("No Stripe customer found for user.");
 
   // redirect to billing portal if user is already subscribed
-  const subscription = await getUserSubscription(user.id);
+  const subscription = await getSubscription(user.id);
   if (subscription?.status === "active")
     redirect(`${process.env.BETTER_AUTH_URL}/dashboard`); // dashboard for now
 
@@ -153,7 +153,7 @@ export async function handleCheckoutSessionCompleted(
   const billingPeriodEnd = subscription.items.data[0]?.current_period_end;
   const status = subscription.status;
 
-  await createUserSubscription({
+  await createSubscription({
     userId: userId,
     stripeSubscriptionId: subscriptionId,
     currentPlanId: planId,
