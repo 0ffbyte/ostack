@@ -1,13 +1,24 @@
 import { create } from "zustand";
 
 type AppStore = {
-  bears: number;
-  increasePopulation: () => void;
+  alert: {
+    title: string;
+    message: string;
+    timestamp: number;
+  } | null;
+  setAlert: ({ title, message }: { title: string; message: string }) => void;
 };
 
 const useAppStore = create<AppStore>((set) => ({
-  bears: 0,
-  increasePopulation: () => set((state) => ({ bears: state.bears + 1 })),
+  alert: null,
+  setAlert: ({ title, message }) =>
+    set({
+      alert: {
+        title,
+        message,
+        timestamp: new Date().getTime(),
+      },
+    }),
 }));
 
 export default useAppStore;

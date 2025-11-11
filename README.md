@@ -1,39 +1,47 @@
 # 🧱 OStack – All-in-One SaaS Starter Kit
 
-**OStack** is Artntek’s internal foundation for building SaaS products — a modern, type-safe, production-ready stack optimized for fast iteration, scalability, and clean architecture.
+**OStack** is Artntek’s internal foundation for building SaaS products — a modern, type-safe, production-ready stack optimized for **fast iteration**, **scalability**, and **clean architecture**.
 
----
+OStack eliminates boilerplate and unifies conventions across Artntek’s ecosystem, making it effortless to **launch, maintain, and evolve** SaaS products with a consistent developer experience.
 
 ### 🧩 Tech Stack
 
 - **Framework:** Next.js 16
-- **State Management:** Zustand
-- **Database & ORM:** Postgres + Drizzle ORM
 - **Authentication:** Better Auth
-- **Styling:** Tailwind CSS
-- **Object Storage:** Cloudflare R2
-- **Queue & Scheduling:** Upstash QStash (Messages + Cron Schedules)
+- **Database & ORM:** Neon Postgres + Drizzle ORM
 - **Payments:** Stripe (Subscriptions + Usage-based Billing)
+- **Queue & Cron:** Upstash QStash (Messages + Cron Schedules)
+- **Object Storage:** Cloudflare R2
 - **Client Data Fetching:** SWR
+- **State Management:** Zustand
+- **UI & Styling:** Tailwind CSS + Shadcn UI
 
----
+### ⚙️ OStack Core
 
-### ⚙️ Core Features
+- 🔐 Authentication & Authorization
+- 💳 Subscription Management
+- 📊 Metered Billing & Usage Tracking
+- 📦 File Uploads & Sotrage
+- 📬 Queues & Scheduled Jobs
+- 🗄️ Postgres DB
 
-- 🔐 User authentication & session management
-- 📦 File uploads & Cloudflare R2 integration
-- 📬 Serverless-ready background jobs & scheduled tasks via QStash
-- 💳 Subscription management with Stripe
-- 📊 Built-in usage tracking & reporting for metered billing
-- 🗄️ Pre-configured database schema with migrations
-- 🧠 Type-safe full-stack setup using modern TypeScript patterns
-- ⚡ Efficient client-side caching & revalidation with SWR
+### 🚀 Getting Started
 
----
+**Initialize the project:**
 
-### ⚙️ Environment Variables
+```bash
+bun init
+```
 
-Create a `.env.local` file at the project root and configure the following variables:
+Then follow your setup steps:
+
+1. Configure environment variables
+2. Run database migrations
+3. Start your development server
+
+**Configure environment variables:**
+
+Create a `.env` file at the project root and configure the following:
 
 ```bash
 # Environment
@@ -43,8 +51,8 @@ NODE_ENV="development"
 DATABASE_URL=
 
 # Authentication
-BETTER_AUTH_SECRET=
-BETTER_AUTH_URL=
+BETTER_AUTH_SECRET=strong-secret-123
+BETTER_AUTH_URL=https://localhost:3000 # dev server url
 
 # OAuth Providers
 GITHUB_CLIENT_ID=
@@ -55,34 +63,34 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
 
-# Cloudflare R2 Storage
-R2_ENDPOINT=
-R2_ACCESS_KEY=
-R2_SECRET_KEY=
-
-# Upstash QStash
+# QStash
+QSTASH_URL=http://127.0.0.1:8080 # dev server url
 QSTASH_TOKEN=
 QSTASH_CURRENT_SIGNING_KEY=
 QSTASH_NEXT_SIGNING_KEY=
+
+# Cloudflare R2
+R2_ENDPOINT=
+R2_ACCESS_KEY=
+R2_SECRET_KEY=
 ```
 
----
-
-### 🚀 Getting Started
-
-Initialize a new project with **Bun**:
+**Run database migrations:**
 
 ```bash
-bun init
+bun db:generate
+bun db:migrate
 ```
 
-Then follow your setup steps (install dependencies, configure environment variables, run database migrations, etc.).
+**Start the development server:**
 
----
+```bash
+bun dev
+```
 
 ### 📚 Testing Locally
 
-Forwarding stripe events:
+Forward stripe events using the cli:
 
 ```bash
 stripe listen --forward-to localhost:3000/api/stripe/webhook
@@ -94,10 +102,27 @@ Run a local QStash server:
 npx @upstash/qstash-cli dev
 ```
 
+### 📁 File Structure
+
+To migrate any existing projects, you can simply copy/swap the following files and folders:
+
+```bash
+.
+├── app
+│   └── (auth)
+├── core
+│   ├── auth
+│   ├── db
+│   ├── integration
+│   ├── payment
+│   └── types.ts
+├── drizzle.config.ts
+├── ostack.config.ts
+├── proxy.ts
+```
+
 ### 🧠 Philosophy
 
-OStack is designed to eliminate boilerplate and unify conventions across Artntek’s ecosystem — making it effortless to launch, maintain, and evolve SaaS products with a consistent developer experience.
-
-### 📚 New Concepts
-
-- **Scheduled Subscriptions:** More on this later.
+OStack isn’t just a starter kit — it’s a **living foundation** for Artntek’s SaaS ecosystem.
+It’s built on the belief that great software comes from **clarity, taste, and consistency**, not endless setup.
+With OStack, teams can focus on what truly matters: **creating products with intention and velocity**.

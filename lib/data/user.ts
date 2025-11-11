@@ -1,8 +1,8 @@
 "server-only";
-import { db } from "@/lib/data/db";
-import { subscription, transaction } from "@/lib/data/db/schema";
+import { db } from "@/core/db";
+import { subscription, transaction } from "@/core/db/schema";
 import { eq, gte, lt, sum, and } from "drizzle-orm";
-import { verifySession } from "@/lib/auth/session";
+import { verifySession } from "@/core/auth/session";
 
 export const getUserSubscription = async () => {
   const { user } = await verifySession();

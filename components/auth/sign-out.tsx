@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { authClient } from "@/lib/auth/auth-client";
+import { authClient } from "@/core/auth/auth-client";
 
 export default function SignOutButton() {
   const [isPending, setIsPending] = React.useState(false);

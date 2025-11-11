@@ -1,8 +1,7 @@
-"use client";
 import { H2, H1, P } from "@/components/ui/typography";
-import LoginButton from "@/components/auth/login";
+import LoginButton from "@/components/auth/sign-in";
 
-export default function Home() {
+export default async function Home() {
   return (
     <div className="w-full min-h-screen flex items-start justify-center">
       <main className="max-w-[1024px] w-full flex flex-col justify-start space-y-[48px] pt-[128px]">

@@ -10,7 +10,7 @@ export function H1({
   return (
     <h1
       className={cn(
-        "text-[36px] leading-[40px] font-sans-semibold text-pretty",
+        "text-[36px] leading-[40px] font-sans-semibold text-pretty antialiased md:subpixel-antialiased",
         className
       )}
     >
