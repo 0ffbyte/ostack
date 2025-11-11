@@ -104,7 +104,8 @@ npx @upstash/qstash-cli dev
 
 ### 📁 File Structure
 
-To migrate any existing projects, you can simply copy/swap the following files and folders. It's plug and play by design.
+To migrate any existing projects, you can simply copy the following files and folders.
+It's plug and play by design.
 
 ```bash
 .
@@ -116,9 +117,16 @@ To migrate any existing projects, you can simply copy/swap the following files a
 │   ├── integration
 │   ├── payment
 │   └── types.ts
+├── lib
+│   ├── data
+│   ├── constants.ts
+│   ├── store.ts
+│   └── utils.ts
 ├── drizzle.config.ts
 ├── ostack.config.ts
 ├── proxy.ts
+```
+
 ```
 
 ### 🧠 Philosophy
@@ -126,3 +134,4 @@ To migrate any existing projects, you can simply copy/swap the following files a
 OStack isn’t just a starter kit — it’s a **living foundation** for Artntek’s SaaS ecosystem.
 It’s built on the belief that great software comes from **clarity, taste, and consistency**, not endless setup.
 With OStack, teams can focus on what truly matters: **creating products with intention and velocity**.
+```
