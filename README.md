@@ -104,7 +104,7 @@ npx @upstash/qstash-cli dev
 
 ### 📁 File Structure
 
-To migrate any existing projects, you can simply copy/swap the following files and folders:
+To migrate any existing projects, you can simply copy/swap the following files and folders. It's plug and play by design.
 
 ```bash
 .
